@@ -115,7 +115,8 @@ block content
         div #{error}
   .col-md-12.cardSpacer
     if settings.index_page.page_header.show_img == true || settings.index_page.page_header.show_title == true || settings.index_page.page_header.show_last_updated == true || settings.index_page.page_header.show_description == true
-      <center style="min-height:50px;margin:20px 20px"><h4>&gt;&gt;&gt;  All blocks before the hard fork at block 1999793 are automatically to ChessCoin 0.32% &lt;&lt;&lt;</h4></center>
+      center(style="min-height:50px;margin:20px 20px")
+        h4 &gt;&gt;&gt;  All blocks before the hard fork at block 1999793 are automatically to ChessCoin 0.32% &lt;&lt;&lt;
       #page-header-container(style='align-items:' + (settings.index_page.page_header.show_img == true && settings.index_page.page_header.show_title == true && settings.index_page.page_header.show_last_updated == true && settings.index_page.page_header.show_description == true ? 'flex-start' : 'center'))
         if settings.index_page.page_header.show_img == true
           #header-img-container

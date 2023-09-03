@@ -1,5 +1,5 @@
 # eIquidus - Adapted for Chesscoin 0.32%
-http://explorer.chesscoin032.com/
+http://liveexplorer.chesscoin032.com/
 
 ## Installation Instructions
 * [Ubuntu 20.04](https://github.com/AKKPP/eiquidus#ubuntu-2004-dependencies)
@@ -751,18 +751,6 @@ node --stack-size=[SIZE] scripts/sync.js index update
 Where [SIZE] is an integer higher than the default.
 
 *note: SIZE will depend on which blockchain you are using, you may need to play around a bit to find an optimal setting*
-
-### How You Can Support Us
-
-The eIquidus block explorer is brought to you by the tireless efforts of the [Exor development team](https://exor.io/#section-team) for the benefit of the greater crypto community. If you enjoy our work, please consider supporting our continued development of this and many other cool crypto projects which you can find on our [github page](https://github.com/team-exor).
-
-You can support us via one of the following options:
-
-1. [Buy and hodl EXOR](https://app.stex.com/en/trade/pair/BTC/EXOR/1D). Buying and trading our EXOR coin helps stimulate the market price which allows us to hire more developers and continue to release high quality products in the future.
-2. Consider a small donation by sending us some cryptocurrency:
-    - **BTC:** [15zQAQFB9KR35nPWEJEKvmytUF6fg2zvdP](https://www.blockchain.com/btc/address/15zQAQFB9KR35nPWEJEKvmytUF6fg2zvdP)
-    - **EXOR:** [EYYW8Nvz5aJz33M3JNHXG2FEHWUsntozrd](https://explorer.exor.io/address/EYYW8Nvz5aJz33M3JNHXG2FEHWUsntozrd)
-3. Are you a software developer? Consider taking advantage of our [open bounty program](#eiquidus-open-bounty-program) and get paid in EXOR to help make the block explorer even better by submitting code improvements.
 
 ### License
 

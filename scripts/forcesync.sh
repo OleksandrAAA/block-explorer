@@ -4,9 +4,9 @@ forcesync() {
   blockcount=$1
   echo "╒══════════════════<<"
   echo "| height : $blockcount"
-  blockhash=`curl -s https://explorer.exor.io/api/getblockhash?height=$blockcount`
+  blockhash=`curl -s https://liveexplorer.chesscoin032.com/api/getblockhash?height=$blockcount`
   echo "| ଓ hash : $blockhash"
-  curl -s https://explorer.exor.io/block/$blockhash > /dev/null
+  curl -s https://liveexplorer.chesscoin032.com/block/$blockhash > /dev/null
   echo "╘═══════════════════════════════>>"
 }
 

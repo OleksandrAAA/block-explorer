@@ -17,7 +17,7 @@ case "$DELETE_ANSWER" in
   *) echo "Process aborted. Nothing was deleted." && exit ;;
 esac
 # Erase entire database
-sudo touch "${SCRIPT_PATH}/del.tmp" && mongo <<EOF
+sudo touch "${SCRIPT_PATH}/del.tmp" && mongosh <<EOF
 use explorerdb
 db.addresses.drop()
 db.addresstxes.drop()
