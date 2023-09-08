@@ -10,16 +10,18 @@ var express = require('express'),
     lib = require('./lib/explorer'),
     db = require('./lib/database'),
     package_metadata = require('./package.json'),
-    locale = require('./lib/locale'),
-    request = require('postman-request');
+    locale = require('./lib/locale');
+    coingecko = require('./lib/apis/coingecko');
 var app = express();
 var apiAccessList = [];
+const { exec } = require('child_process');
+const { exit } = require('process');
 
 // pass wallet rpc connection info to nodeapi
 nodeapi.setWalletDetails(settings.wallet);
 // dynamically build the nodeapi cmd access list by adding all non-blockchain-specific api cmds that have a value
 Object.keys(settings.api_cmds).forEach(function(key, index, map) {
-  if (key != 'use_rpc' && settings.api_cmds[key] != null && settings.api_cmds[key] != '')
+  if (key != 'use_rpc' && key != 'rpc_concurrent_tasks' && settings.api_cmds[key] != null && settings.api_cmds[key] != '')
     apiAccessList.push(key);
 });
 // dynamically find and add additional blockchain_specific api cmds
@@ -33,8 +35,26 @@ Object.keys(settings.blockchain_specific).forEach(function(key, index, map) {
     });
   }
 });
+
 // whitelist the cmds in the nodeapi access list
 nodeapi.setAccess('only', apiAccessList);
+
+// determine if http traffic should be forwarded to https
+if (settings.webserver.tls.enabled == true && settings.webserver.tls.always_redirect == true) {
+  app.use(function(req, res, next) {
+    if (req.secure) {
+      // continue without redirecting
+      next();
+    } else {
+      // add webserver port to the host value if it does not already exist
+      const host = req.headers.host + (req.headers.host.indexOf(':') > -1 ? '' : ':' + settings.webserver.port.toString());
+
+      // redirect to the correct https page
+      res.redirect(301, 'https://' + host.replace(':' + settings.webserver.port.toString(), (settings.webserver.tls.port != 443 ? ':' + settings.webserver.tls.port.toString() : '')) + req.url);
+    }
+  });
+}
+
 // determine if cors should be enabled
 if (settings.webserver.cors.enabled == true) {
   app.use(function(req, res, next) {
@@ -44,11 +64,29 @@ if (settings.webserver.cors.enabled == true) {
     next();
   });
 }
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(favicon(path.join(__dirname, settings.shared_pages.favicon)));
+var default_favicon = '';
+
+// loop through the favicons
+Object.keys(settings.shared_pages.favicons).forEach(function(key, index, map) {
+  // remove the public directory from the path if exists
+  if (settings.shared_pages.favicons[key] != null && settings.shared_pages.favicons[key].indexOf('public/') > -1)
+    settings.shared_pages.favicons[key] = settings.shared_pages.favicons[key].replace(/public\//g, '');
+
+  // check if the favicon file exists
+  if (!db.fs.existsSync(path.join('./public', settings.shared_pages.favicons[key])))
+    settings.shared_pages.favicons[key] = '';
+  else if (default_favicon == '')
+    default_favicon = settings.shared_pages.favicons[key];
+});
+
+if (default_favicon != '')
+  app.use(favicon(path.join('./public', default_favicon)));
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -171,7 +209,7 @@ app.use('/ext/gettx/:txid', function(req, res) {
     db.get_tx(txid, function(tx) {
       if (tx) {
         lib.get_blockcount(function(blockcount) {
-          res.send({ active: 'tx', tx: tx, confirmations: settings.shared_pages.confirmations, blockcount: (blockcount ? blockcount : 0)});
+          res.send({ active: 'tx', tx: tx, confirmations: (blockcount - tx.blockindex + 1), blockcount: (blockcount ? blockcount : 0)});
         });
       } else {
         lib.get_rawtransaction(txid, function(rtx) {
@@ -190,7 +228,7 @@ app.use('/ext/gettx/:txid', function(req, res) {
                       blockindex: -1
                     };
 
-                    res.send({ active: 'tx', tx: utx, confirmations: settings.shared_pages.confirmations, blockcount:-1});
+                    res.send({ active: 'tx', tx: utx, confirmations: rtx.confirmations, blockcount:-1});
                   } else {
                     var utx = {
                       txid: rtx.txid,
@@ -203,7 +241,7 @@ app.use('/ext/gettx/:txid', function(req, res) {
                     };
 
                     lib.get_blockcount(function(blockcount) {
-                      res.send({ active: 'tx', tx: utx, confirmations: settings.shared_pages.confirmations, blockcount: (blockcount ? blockcount : 0)});
+                      res.send({ active: 'tx', tx: utx, confirmations: rtx.confirmations, blockcount: (blockcount ? blockcount : 0)});
                     });
                   }
                 });
@@ -246,13 +284,12 @@ app.use('/ext/getdistribution', function(req, res) {
     res.end('This method is disabled');
 });
 
-app.use('/ext/getcurrentprice', function(req, res) {
+app.use('/ext/getcurrentprice', async function(req, res) {
   // check if the getcurrentprice api is enabled
   if (settings.api_page.enabled == true && settings.api_page.public_apis.ext.getcurrentprice.enabled == true) {
-    db.get_stats(settings.coin.name, function (stats) {
-      eval('var p_ext = { "last_price_' + settings.markets_page.default_exchange.trading_pair.split('/')[1].toLowerCase() + '": stats.last_price, "last_price_usd": stats.last_usd_price, }');
+    let cur_usd_price = await coingecko.get_chesscoin_usd("chesscoin-0-32"); 
+      eval('var p_ext = { "last_price_usd": cur_usd_price }');
       res.send(p_ext);
-    });
   } else
     res.end('This method is disabled');
 });
@@ -261,7 +298,9 @@ app.use('/ext/getbasicstats', function(req, res) {
   // check if the getbasicstats api is enabled
   if (settings.api_page.enabled == true && settings.api_page.public_apis.ext.getbasicstats.enabled == true) {
     // lookup stats
-    db.get_stats(settings.coin.name, function (stats) {
+    db.get_stats(settings.coin.name, async function (stats) {
+      let cur_usd_price = await coingecko.get_chesscoin_usd("chesscoin-0-32"); 
+
       // check if the masternode count api is enabled
       if (settings.api_page.public_apis.rpc.getmasternodecount.enabled == true && settings.api_cmds['getmasternodecount'] != null && settings.api_cmds['getmasternodecount'] != '') {
         // masternode count api is available
@@ -271,7 +310,7 @@ app.use('/ext/getbasicstats', function(req, res) {
         });
       } else {
         // masternode count api is not available
-        eval('var p_ext = { "block_count": (stats.count ? stats.count : 0), "money_supply": (stats.supply ? stats.supply : 0), "last_price_' + settings.markets_page.default_exchange.trading_pair.split('/')[1].toLowerCase() + '": stats.last_price, "last_price_usd": stats.last_usd_price }');
+        eval('var p_ext = { "block_count": (stats.count ? stats.count : 0), "money_supply": (stats.supply ? stats.supply : 0), "last_price_usd": cur_usd_price }');
         res.send(p_ext);
       }
     });
@@ -404,7 +443,7 @@ app.use('/ext/getaddresstxs/:address/:start/:length', function(req, res) {
     res.end('This method is disabled');
 });
 
-app.use('/ext/getsummary', function(req, res) {
+app.use('/ext/getsummary',  function(req, res) {
   // check if the getsummary api is enabled or else check the headers to see if it matches an internal ajax request from the explorer itself (TODO: come up with a more secure method of whitelisting ajax calls from the explorer)
   if ((settings.api_page.enabled == true && settings.api_page.public_apis.ext.getsummary.enabled == true) || (req.headers['x-requested-with'] != null && req.headers['x-requested-with'].toLowerCase() == 'xmlhttprequest' && req.headers.referer != null && req.headers.accept.indexOf('text/javascript') > -1 && req.headers.accept.indexOf('application/json') > -1)) {
     lib.get_connectioncount(function(connections) {
@@ -420,7 +459,7 @@ app.use('/ext/getsummary', function(req, res) {
           lib.get_hashrate(function(hashrate) {
             db.get_stats(settings.coin.name, function (stats) {
               lib.get_masternodecount(function(masternodestotal) {
-                lib.get_difficulty(function(difficulty) {
+                lib.get_difficulty(async function(difficulty) {
                   difficultyHybrid = '';
 
                   if (difficulty && difficulty['proof-of-work']) {
@@ -435,6 +474,9 @@ app.use('/ext/getsummary', function(req, res) {
 
                   if (hashrate == 'There was an error. Check your console.')
                     hashrate = 0;
+
+                  // get the usd value of the default market pair from coingecko
+                  let cur_usd_price = await coingecko.get_chesscoin_usd("chesscoin-0-32"); 
 
                   // check if the masternode count api is enabled
                   if (settings.api_page.public_apis.rpc.getmasternodecount.enabled == true && settings.api_cmds['getmasternodecount'] != null && settings.api_cmds['getmasternodecount'] != '') {
@@ -468,7 +510,7 @@ app.use('/ext/getsummary', function(req, res) {
                       difficultyHybrid: difficultyHybrid,
                       supply: (stats == null || stats.supply == null ? 0 : stats.supply),
                       hashrate: hashrate,
-                      lastPrice: (stats == null || stats.last_price == null ? 0 : stats.last_price),
+                      lastPrice: (cur_usd_price ? cur_usd_price: 0),
                       connections: (connections ? connections : '-'),
                       blockcount: (blockcount ? blockcount : '-')
                     });
@@ -487,13 +529,6 @@ app.use('/ext/getsummary', function(req, res) {
 app.use('/ext/getnetworkpeers', function(req, res) {
   // check if the getnetworkpeers api is enabled or else check the headers to see if it matches an internal ajax request from the explorer itself (TODO: come up with a more secure method of whitelisting ajax calls from the explorer)
   if ((settings.api_page.enabled == true && settings.api_page.public_apis.ext.getnetworkpeers.enabled == true) || (req.headers['x-requested-with'] != null && req.headers['x-requested-with'].toLowerCase() == 'xmlhttprequest' && req.headers.referer != null && req.headers.accept.indexOf('text/javascript') > -1 && req.headers.accept.indexOf('application/json') > -1)) {
-    var internal = false;
-    // split url suffix by forward slash and remove blank entries
-    var split = req.url.split('/').filter(function(v) { return v; });
-    // check if this is an internal request
-    if (split.length > 0 && split[0].indexOf('internal') > -1)
-      internal = true;
-
     // get list of peers
     db.get_peers(function(peers) {
       // loop through peers list and remove the mongo _id and __v keys
@@ -502,14 +537,21 @@ app.use('/ext/getnetworkpeers', function(req, res) {
         delete peers[i]['_doc']['__v'];
       }
 
-      // check if this is an internal request
-      if (internal) {
-        // display data formatted for internal datatable
-        res.json({"data": peers});
-      } else {
-        // display data in more readable format for public api
-        res.json(peers);
-      }
+      // sort ip6 addresses to the bottom
+      peers.sort(function(a, b) {
+        var address1 = a.address.indexOf(':') > -1;
+        var address2 = b.address.indexOf(':') > -1;
+
+        if (address1 < address2)
+          return -1;
+        else if (address1 > address2)
+          return 1;
+        else
+          return 0;
+      });
+
+      // return peer data
+      res.json(peers);
     });
   } else
     res.end('This method is disabled');
@@ -575,6 +617,62 @@ app.use('/ext/getmasternoderewardstotal/:hash/:since', function(req, res) {
     res.end('This method is disabled');
 });
 
+// get the list of orphans from local collection
+app.use('/ext/getorphanlist/:start/:length', function(req, res) {
+  // check the headers to see if it matches an internal ajax request from the explorer itself (TODO: come up with a more secure method of whitelisting ajax calls from the explorer)
+  if (req.headers['x-requested-with'] != null && req.headers['x-requested-with'].toLowerCase() == 'xmlhttprequest' && req.headers.referer != null && req.headers.accept.indexOf('text/javascript') > -1 && req.headers.accept.indexOf('application/json') > -1) {
+    // fix parameters
+    if (typeof req.params.start === 'undefined' || isNaN(req.params.start) || req.params.start < 0)
+      req.params.start = 0;
+    if (typeof req.params.length === 'undefined' || isNaN(req.params.length))
+      req.params.length = 10;
+
+    // get the orphan list from local collection
+    db.get_orphans(req.params.start, req.params.length, function(orphans, count) {
+      var data = [];
+
+      for (i = 0; i < orphans.length; i++) {
+        var row = [];
+
+        row.push(orphans[i].blockindex);
+        row.push(orphans[i].orphan_blockhash);
+        row.push(orphans[i].good_blockhash);
+        row.push(orphans[i].prev_blockhash);
+        row.push(orphans[i].next_blockhash);
+
+        data.push(row);
+      }
+
+      // display data formatted for internal datatable
+      res.json({"data": data, "recordsTotal": count, "recordsFiltered": count});
+    });
+  } else
+    res.end('This method is disabled');
+});
+
+app.use('/ext/getnetworkchartdata', function(req, res) {
+  db.get_network_chart_data(function(data) {
+    if (data)
+      res.send(data);
+    else
+      res.send();
+  });
+});
+
+app.use('/system/restartexplorer', function(req, res, next) {
+  // check to ensure this special cmd is only executed by the local server
+  if (req._remoteAddress != null && req._remoteAddress.indexOf('127.0.0.1') > -1) {
+    // send a msg to the cluster process telling it to restart
+    process.send('restart');
+    res.end();
+  } else {
+    // show the error page
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+  }
+});
+
 var market_data = [];
 var market_count = 0;
 
@@ -589,16 +687,48 @@ if (settings.markets_page.enabled == true) {
         // load market file
         var exMarket = require('./lib/markets/' + key);
         // save market_name and market_logo from market file to settings
-        eval('market_data.push({id: "' + key + '", name: "' + (exMarket.market_name == null ? '' : exMarket.market_name) + '", logo: "' + (exMarket.market_logo == null ? '' : exMarket.market_logo) + '", trading_pairs: []});');
+        eval('market_data.push({id: "' + key + '", name: "' + (exMarket.market_name == null ? '' : exMarket.market_name) + '", alt_name: "' + (exMarket.market_name_alt == null ? '' : exMarket.market_name_alt) + '", logo: "' + (exMarket.market_logo == null ? '' : exMarket.market_logo) + '", alt_logo: "' + (exMarket.market_logo_alt == null ? '' : exMarket.market_logo_alt) + '", trading_pairs: []});');
         // loop through all trading pairs for this market
         for (var i = 0; i < settings.markets_page.exchanges[key].trading_pairs.length; i++) {
-          // ensure trading pair setting is always uppercase
-          settings.markets_page.exchanges[key].trading_pairs[i] = settings.markets_page.exchanges[key].trading_pairs[i].toUpperCase();
+          var isAlt = false;
+          var pair = settings.markets_page.exchanges[key].trading_pairs[i].toUpperCase(); // ensure trading pair setting is always uppercase
+          var coin_symbol = pair.split('/')[0];
+          var pair_symbol = pair.split('/')[1];
+
+          // determine if using the alt name + logo
+          if (exMarket.market_url_template != null && exMarket.market_url_template != '') {
+            switch ((exMarket.market_url_case == null || exMarket.market_url_case == '' ? 'l' : exMarket.market_url_case.toLowerCase())) {
+              case 'l':
+              case 'lower':
+                isAlt = (exMarket.isAlt != null ? exMarket.isAlt({coin: coin_symbol.toLowerCase(), exchange: pair_symbol.toLowerCase()}) : false);
+                break;
+              case 'u':
+              case 'upper':
+                isAlt = (exMarket.isAlt != null ? exMarket.isAlt({coin: coin_symbol.toUpperCase(), exchange: pair_symbol.toUpperCase()}) : false);
+                break;
+              default:
+            }
+          }
+
           // add trading pair to market_data
-          market_data[market_data.length - 1].trading_pairs.push(settings.markets_page.exchanges[key].trading_pairs[i]);
+          market_data[market_data.length - 1].trading_pairs.push({
+            pair: pair,
+            isAlt: isAlt
+          });
+
           // increment the market count
           market_count++;
         }
+
+        // sort trading pairs by alt status
+        market_data[market_data.length - 1].trading_pairs.sort(function(a, b) {
+          if (a.isAlt < b.isAlt)
+            return -1;
+          else if (a.isAlt > b.isAlt)
+            return 1;
+          else
+            return 0;
+        });
       }
     }
   });
@@ -680,6 +810,7 @@ settings.api_page.public_apis.rpc.getmasternodelist = { "enabled": false };
 app.set('explorer_version', package_metadata.version);
 app.set('locale', locale);
 app.set('coin', settings.coin);
+app.set('network_history', settings.network_history);
 app.set('shared_pages', settings.shared_pages);
 app.set('index_page', settings.index_page);
 app.set('block_page', settings.block_page);
@@ -693,6 +824,7 @@ app.set('richlist_page', settings.richlist_page);
 app.set('markets_page', settings.markets_page);
 app.set('api_page', settings.api_page);
 app.set('claim_address_page', settings.claim_address_page);
+app.set('orphans_page', settings.orphans_page);
 app.set('labels', settings.labels);
 app.set('api_cmds', settings.api_cmds);
 app.set('blockchain_specific', settings.blockchain_specific);
@@ -705,7 +837,10 @@ var panelcount = (settings.shared_pages.page_header.panels.network_panel.enabled
   (settings.shared_pages.page_header.panels.coin_supply_panel.enabled == true && settings.shared_pages.page_header.panels.coin_supply_panel.display_order > 0 ? 1 : 0) +
   (settings.shared_pages.page_header.panels.price_panel.enabled == true && settings.shared_pages.page_header.panels.price_panel.display_order > 0 ? 1 : 0) +
   (settings.shared_pages.page_header.panels.market_cap_panel.enabled == true && settings.shared_pages.page_header.panels.market_cap_panel.display_order > 0 ? 1 : 0) +
-  (settings.shared_pages.page_header.panels.logo_panel.enabled == true && settings.shared_pages.page_header.panels.logo_panel.display_order > 0 ? 1 : 0);
+  (settings.shared_pages.page_header.panels.logo_panel.enabled == true && settings.shared_pages.page_header.panels.logo_panel.display_order > 0 ? 1 : 0) +
+  (settings.shared_pages.page_header.panels.spacer_panel_1.enabled == true && settings.shared_pages.page_header.panels.spacer_panel_1.display_order > 0 ? 1 : 0) +
+  (settings.shared_pages.page_header.panels.spacer_panel_2.enabled == true && settings.shared_pages.page_header.panels.spacer_panel_2.display_order > 0 ? 1 : 0) +
+  (settings.shared_pages.page_header.panels.spacer_panel_3.enabled == true && settings.shared_pages.page_header.panels.spacer_panel_3.display_order > 0 ? 1 : 0);
 app.set('paneloffset', paneltotal + 1 - panelcount);
 
 // determine panel order
@@ -718,6 +853,9 @@ if (settings.shared_pages.page_header.panels.coin_supply_panel.enabled == true &
 if (settings.shared_pages.page_header.panels.price_panel.enabled == true && settings.shared_pages.page_header.panels.price_panel.display_order > 0) panel_order.push({name: 'price_panel', val: settings.shared_pages.page_header.panels.price_panel.display_order});
 if (settings.shared_pages.page_header.panels.market_cap_panel.enabled == true && settings.shared_pages.page_header.panels.market_cap_panel.display_order > 0) panel_order.push({name: 'market_cap_panel', val: settings.shared_pages.page_header.panels.market_cap_panel.display_order});
 if (settings.shared_pages.page_header.panels.logo_panel.enabled == true && settings.shared_pages.page_header.panels.logo_panel.display_order > 0) panel_order.push({name: 'logo_panel', val: settings.shared_pages.page_header.panels.logo_panel.display_order});
+if (settings.shared_pages.page_header.panels.spacer_panel_1.enabled == true && settings.shared_pages.page_header.panels.spacer_panel_1.display_order > 0) panel_order.push({name: 'spacer_panel_1', val: settings.shared_pages.page_header.panels.spacer_panel_1.display_order});
+if (settings.shared_pages.page_header.panels.spacer_panel_2.enabled == true && settings.shared_pages.page_header.panels.spacer_panel_2.display_order > 0) panel_order.push({name: 'spacer_panel_2', val: settings.shared_pages.page_header.panels.spacer_panel_2.display_order});
+if (settings.shared_pages.page_header.panels.spacer_panel_3.enabled == true && settings.shared_pages.page_header.panels.spacer_panel_3.display_order > 0) panel_order.push({name: 'spacer_panel_3', val: settings.shared_pages.page_header.panels.spacer_panel_3.display_order});
 
 panel_order.sort(function(a,b) { return a.val - b.val; });
 
@@ -734,42 +872,60 @@ app.use(function(req, res, next) {
     next(err);
 });
 
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  });
-}
-
-// production error handler
-// no stacktraces leaked to user
+// error handler - will print stacktrace when in development mode, otherwise no stacktraces will be leaked to the user
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,
-    error: {}
+    error: (app.get('env') === 'development' ? err : {})
   });
 });
 
 // determine if tls features should be enabled
 if (settings.webserver.tls.enabled == true) {
+  function readCertsSync() {
+    var tls_options = {};
+
+    try {
+      tls_options = {
+        key: db.fs.readFileSync(settings.webserver.tls.key_file),
+        cert: db.fs.readFileSync(settings.webserver.tls.cert_file),
+        ca: db.fs.readFileSync(settings.webserver.tls.chain_file)
+      };
+    } catch(e) {
+      console.warn('There was a problem reading tls certificates. Check that the certificate, chain and key paths are correct.');
+    }
+
+    return tls_options;
+  }
+
+  const https = require('https');
+  let httpd = https.createServer(readCertsSync(), app).listen(settings.webserver.tls.port);
+
   try {
-    var tls_options = {
-      key: db.fs.readFileSync(settings.webserver.tls.key_file),
-      cert: db.fs.readFileSync(settings.webserver.tls.cert_file),
-      ca: db.fs.readFileSync(settings.webserver.tls.chain_file)
-    };
+    let waitForCertsToRefresh;
+
+    // watch for changes to the certificate directory
+    db.fs.watch(path.dirname(settings.webserver.tls.key_file), () => {
+      clearTimeout(waitForCertsToRefresh);
+
+      // refresh certificates as they are changed on disk
+      waitForCertsToRefresh = setTimeout(() => {
+        httpd.setSecureContext(readCertsSync());
+      }, 1000);
+    });
   } catch(e) {
     console.warn('There was a problem reading tls certificates. Check that the certificate, chain and key paths are correct.');
   }
-
-  var https = require('https');
-  https.createServer(tls_options, app).listen(settings.webserver.tls.port);
 }
+
+// get the latest git commit id (if exists)
+exec('git rev-parse HEAD', (err, stdout, stderr) => {
+  // check if the commit id was returned
+  if (stdout != null && stdout != '') {
+    // set the explorer revision code based on the git commit id
+    app.set('revision', stdout.substring(0, 7));
+  }
+});
 
 module.exports = app;

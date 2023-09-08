@@ -10,9 +10,9 @@
   // dbsettings: a collection of settings that allow the explorer to connect to MongoDB
   "dbsettings": {
     // user: The MongoDB username
-    "user": "USERNAME",
+    "user": "eiquidus",
     // password: The MongoDB password
-    "password": "SECUREPASS",
+    "password": "Nd^p2d77ceBX!L",
     // database: The MongoDB database name (default: explorerdb)
     "database": "explorerdb",
     // address: The MongoDB hostname. This should always be 'localhost' if connecting to a local instance, otherwise specify the ip address of a remote instance
@@ -26,11 +26,11 @@
     // host: The hostname or ip address of the wallet to connect to (default: localhost)
     "host": "localhost",
     // port: The port # that the wallet is configured to listen for RPC requests on (default: 51573 for Exor wallet)
-    "port": 7324,
+    "port": 51573,
     // username: The wallet RPC username
-    "username": "RPCUSERNAME",
+    "username": "exorrpc",
     // password: The wallet RPC password
-    "password": "RPCSECUREPASS"
+    "password": "sSTLyCkrD94Y8&9mr^m6W^Mk367Vr!!K"
   },
 
   // webserver: a collection of settings that pertain to the node.js express web framework (read more: https://www.npmjs.com/package/express)
@@ -47,6 +47,10 @@
       // port: Port # to configure the express webserver to listen for https requests on
       //       NOTE: Be sure to configure firewalls to allow traffic through this port or the explorer website may not be accessible remotely
       "port": 443,
+      // always_redirect: Force all explorer traffic to use https
+      //                  If set to true, all http web requests will automatically be forwarded to https
+      //                  If set to false, the webserver will allow both http and https traffic
+      "always_redirect": true,
       // cert_file: The absolute or relative path to the tls certificate file. Typically this file will be generated from certbot (read more: https://certbot.eff.org)
       "cert_file": "/etc/letsencrypt/live/domain-name-here/cert.pem",
       // chain_file: The absolute or relative path to the tls chain file. Typically this file will be generated from certbot (read more: https://certbot.eff.org)
@@ -73,24 +77,47 @@
   "coin": {
     // name: Name of the cryptocurrency coin being explored. This value is displayed in the page header when the "shared_pages.page_header.home_link" setting is set to "coin".
     //       NOTE: This value acts as a unique identifier for data stored in mongo and therefore cannot be changed without re-syncing all existing data.
-    "name": "CHESS",
+    "name": "Exor",
     // symbol: The cryptocurrency coin ticker/symbol value. This value is displayed anywhere that coin data is displayed including the index, address, block, movement, reward, richlist/top100 and tx pages
-    "symbol": "CHESS"
+    "symbol": "EXOR"
+  },
+
+  // network_history: a collection of settings that controls saving of extra historical network data during a block sync
+  "network_history": {
+    // enabled: Enable/disable the saving of additional network history data (true/false)
+    //          If set to false, historical data such as network hashrate and difficulty values will not be saved or available for network charts
+    "enabled": true,
+    // max_saved_records: The maximum # of blocks to save historical data for
+    "max_saved_records": 120
   },
 
   /* Shared page settings */
-
+ 
   // shared_pages: a collection of settings that pertain to all webpages for the explorer
   "shared_pages": {
     // theme: Change the look & feel of the explorer with a unique theme. Uses bootswatch themes (https://bootswatch.com)
-    //        Valid options: Cerulean, Cosmo, Cyborg, Darkly, Exor, Flatly, Journal, Litera, Lumen, Lux, Materia, Minty, Pulse, Sandstone, Simplex, Sketchy, Slate, Solar, Spacelab, Superhero, United, Yeti
+    //        Valid options: Cerulean, Cosmo, Cyborg, Darkly, Exor, Flatly, Journal, Litera, Lumen, Lux, Materia, Minty, Morph, Pulse, Quartz, Sandstone, Simplex, Sketchy, Slate, Solar, Spacelab, Superhero, United, Vapor, Yeti, Zephyr
     //        (see /public/css/themes for available themes)
-    "theme": "Cosmo",
-    // page_title: The text to display in the HTML title tag and also displayed in the page header when the "shared_pages.page_header.home_link" setting is set to "title"
-    "page_title": "Chesscoin 0.32% | Explorer",
-    // favicon: The path to an icon file that is displayed in a browser window/tab and serves as branding for your website. Its main purpose is to help visitors locate your page easier when they have multiple tabs open
-    //          NOTE: The path root is /
-    "favicon": "public/favicon.ico",
+    "theme": "Exor",
+    // page_title: The text to display at the end of the HTML title tag and also displayed in the page header when the "shared_pages.page_header.home_link" setting is set to "title"
+    "page_title": "eIquidus",
+    // favicons: a collection of image or icon files that are displayed in a browser window/tab and serve as branding for your website. Their main purpose is to help visitors locate your page easier when they have multiple tabs open
+    //          Modern favicon sizes were inspired by this web article: https://www.emergeinteractive.com/insights/detail/The-Essentials-of-FavIcons/
+    //          NOTE: If any of the favicons are left blank or not set to a valid file, they will be disabled and unused
+    "favicons": {
+      // favicon32: The path to a 32x32 image or icon file
+      //            NOTE: The path root is /public
+      "favicon32": "favicon-32.png",
+      // favicon128: The path to a 128x128 image or icon file
+      //            NOTE: The path root is /public
+      "favicon128": "favicon-128.png",
+      // favicon180: The path to a 180x180 image or icon file
+      //            NOTE: The path root is /public
+      "favicon180": "favicon-180.png",
+      // favicon192: The path to a 192x192 image or icon file
+      //            NOTE: The path root is /public
+      "favicon192": "favicon-192.png"
+    },
     // logo: The path to an image file that is displayed on the api page as well as in one of the top panels when enabled
     //       This logo can also be displayed in the header when the "shared_pages.page_header.home_link" setting is set to "logo" and the "shared_pages.page_header.home_link_logo" setting is blank or an invalid file
     //       NOTE: The path root is /public
@@ -126,10 +153,14 @@
     //             Hybrid: Display both the proof-of-work and proof-of-stake difficulty values
     "difficulty": "POS",
     // show_hashrate: Determine whether to show network hash rate where applicable (true/false)
-    //                If set to false, the /api/getnetworkhashps and /ext/getsummary apis will no longer show hash rate information
+    //                If set to false, the /api/getnetworkhashps and /ext/getsummary apis will no longer show hash rate information, and the network hashrate chart will automatically be disabled
     "show_hashrate": true,
     // page_header: A collection of settings that pertain to the page header that is displayed at the top of all pages
     "page_header": {
+      // menu: Valid options:
+      //       top: display menu items horizontally across the top of the page
+      //       side: display menu items vertically across the left-hand side of the page
+      "menu": "side",
       // sticky_header: Determine whether page header "sticks" to top of page or not (true/false)
       "sticky_header": true,
       // bgcolor: Change the background color of the page header
@@ -143,7 +174,7 @@
       // home_link_logo: The path to a logo image that is displayed on page header when the "shared_pages.page_header.home_link" setting is set to "logo"
       //                 If the home_link_logo is left blank or not set to a valid file, the "shared_pages.page_header.home_link" = "logo" setting will automatically default to displaying the original "shared_pages.logo" instead of the "shared_pages.page_header.home_link_logo"
       //                 NOTE: The path root is /public
-      "home_link_logo": "/img/header_logo.png",
+      "home_link_logo": "/img/header-logo.png",
       // home_link_logo_height: The max-height value of the "shared_pages.page_header.home_link" logo image (value in px, only valid if "shared_pages.page_header.home_link" = 'logo')
       "home_link_logo_height": 50,
       // panels: a collection of settings that pertain to the panels displayed on page header of all pages (NOTE: you can show/hide the entire group of panels on each page independently by changing the show_panels value in the settings for each page)
@@ -185,11 +216,11 @@
         "masternodes_panel": {
           // enabled: Enable/disable the masternode panel (true/false)
           //          If set to false, the masternode panel will be completely inaccessible
-          "enabled": false,
+          "enabled": true,
           // display_order: Determine which order this panel is shown from 1-5
           //                1 = far left panel, 5 = far right panel
           //                The panel will be disabled with a value of 0
-          "display_order": 0
+          "display_order": 2
         },
         // coin_supply_panel: a collection of settings that pertain to the coin supply panel which displays the current circulating coin supply value
         "coin_supply_panel": {
@@ -215,7 +246,7 @@
         "market_cap_panel": {
           // enabled: Enable/disable the market cap panel (true/false)
           //          If set to false, the market cap panel will be completely inaccessible
-          "enabled": false,
+          "enabled": true,
           // display_order: Determine which order this panel is shown from 1-5
           //                1 = far left panel, 5 = far right panel
           //                The panel will be disabled with a value of 0
@@ -230,6 +261,39 @@
           //                1 = far left panel, 5 = far right panel
           //                The panel will be disabled with a value of 0
           "display_order": 3
+        },
+        // spacer_panel_1: a collection of settings that pertain to the 1st spacer panel which allows inserting a blank space into the top panels
+        //                 NOTE: spacer panels are only visible on desktop and tablet screen sizes and are hidden on mobile screens
+        "spacer_panel_1": {
+          // enabled: Enable/disable the spacer panel (true/false)
+          //          If set to false, the spacer panel will be completely inaccessible
+          "enabled": false,
+          // display_order: Determine which order this panel is shown from 1-5
+          //                1 = far left panel, 5 = far right panel
+          //                The panel will be disabled with a value of 0
+          "display_order": 0
+        },
+        // spacer_panel_2: a collection of settings that pertain to the 2nd spacer panel which allows inserting a blank space into the top panels
+        //                 NOTE: spacer panels are only visible on desktop and tablet screen sizes and are hidden on mobile screens
+        "spacer_panel_2": {
+          // enabled: Enable/disable the spacer panel (true/false)
+          //          If set to false, the spacer panel will be completely inaccessible
+          "enabled": false,
+          // display_order: Determine which order this panel is shown from 1-5
+          //                1 = far left panel, 5 = far right panel
+          //                The panel will be disabled with a value of 0
+          "display_order": 0
+        },
+        // spacer_panel_3: a collection of settings that pertain to the 3rd spacer panel which allows inserting a blank space into the top panels
+        //                 NOTE: spacer panels are only visible on desktop and tablet screen sizes and are hidden on mobile screens
+        "spacer_panel_3": {
+          // enabled: Enable/disable the spacer panel (true/false)
+          //          If set to false, the spacer panel will be completely inaccessible
+          "enabled": false,
+          // display_order: Determine which order this panel is shown from 1-5
+          //                1 = far left panel, 5 = far right panel
+          //                The panel will be disabled with a value of 0
+          "display_order": 0
         }
       },
       // search: A collection of settings that pertain to the search feature
@@ -249,6 +313,74 @@
         "image_path": "/img/page-title-img.png",
         // enable_animation: Enable/disable the flip/spin animation on the page title image (true/false)
         "enable_animation": true
+      },
+      // network_charts: A collection of settings that pertain to the network hashrate and difficulty line charts displayed on page header of all pages
+      //                 NOTE: You can independently show/hide individual charts by changing the show_nethash_chart and show_difficulty_chart values in the settings for each page
+      //                       The "network_history.enabled" setting must be set to true for network charts to work correctly
+      //                       If the "network_history.enabled" setting is false, all network charts will be completely disabled, regardless of their independent settings
+      "network_charts": {
+        // nethash_chart: A collection of settings that pertain to the network hashrate chart
+        "nethash_chart": {
+          // enabled: Enable/disable the network hashrate chart (true/false)
+          //          If set to false, the network hashrate chart will be completely inaccessible
+          //          NOTE: The `shared_pages.show_hashrate` option must be set to true or else the network hashrate chart will be completely inaccessible
+          "enabled": true,
+          // bgcolor: Change the background color of the network hashrate chart
+          //          Set this to any valid html color
+          //          Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "bgcolor": "#ffffff",
+          // line_color: Change the line color of the network hashrate chart
+          //             Set this to any valid html color
+          //             Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "line_color": "rgba(54, 162, 235, 1)",
+          // fill_color: Change the fill color of the network hashrate chart
+          //             Set this to any valid html color
+          //             Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "fill_color": "rgba(54, 162, 235, 0.2)",
+          // crosshair_color: Change the vertical crosshair line color of the network hashrate chart
+          //             Set this to any valid html color
+          //             Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "crosshair_color": "#000000",
+          // round_decimals: Set how many decimal places the hash rates are rounded to (Max 20)
+          //                 NOTE: Set to a value of -1 to output the raw value without rounding
+          "round_decimals": 3
+        },
+        // difficulty_chart: A collection of settings that pertain to the network difficulty chart
+        "difficulty_chart": {
+          // enabled: Enable/disable the network difficulty chart (true/false)
+          //          If set to false, the network difficulty chart will be completely inaccessible
+          "enabled": true,
+          // bgcolor: Change the background color of the network difficulty chart
+          //          Set this to any valid html color
+          //          Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "bgcolor": "#ffffff",
+          // pow_line_color: Change the line color of the network difficulty chart for POW coins
+          //                 Set this to any valid html color
+          //                 Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "pow_line_color": "rgba(255, 99, 132, 1)",
+          // pow_fill_color: Change the fill color of the network difficulty chart for POW coins
+          //                 Set this to any valid html color
+          //                 Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "pow_fill_color": "rgba(255, 99, 132, 0.2)",
+          // pos_line_color: Change the line color of the network difficulty chart for POS coins
+          //                 Set this to any valid html color
+          //                 Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "pos_line_color": "rgba(255, 161, 0, 1)",
+          // pos_fill_color: Change the fill color of the network difficulty chart for POS coins
+          //                 Set this to any valid html color
+          //                 Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "pos_fill_color": "rgba(255, 161, 0, 0.2)",
+          // crosshair_color: Change the vertical crosshair line color of the network difficulty chart
+          //             Set this to any valid html color
+          //             Ex: "#ffffff" or "rgba(255, 255, 255, 1)" or "white"
+          "crosshair_color": "#000000",
+          // round_decimals: Set how many decimal places the difficulty values are rounded to (Max 20)
+          //                 NOTE: Set to a value of -1 to output the raw value without rounding
+          "round_decimals": 3
+        },
+        // reload_chart_seconds: The time in seconds to automatically reload the network chart data from the server
+        //                       Set to 0 to disable automatic reloading of chart data
+        "reload_chart_seconds": 60
       }
     },
     // page_footer: A collection of settings that pertain to the page footer that is displayed at the bottom of all pages
@@ -280,7 +412,7 @@
           // tooltip_text: Social link tooltips are always prefixed by the "coin.name" setting followed by the text from this tooltip_text setting. Ex: Exor Github
           "tooltip_text": "Github",
           // url: The exact url that the social link should navigate to
-          "url": "https://github.com/AKKPP/ChessCoin",
+          "url": "https://github.com/team-exor",
           // fontawesome_class: A string of css classes, separated by spaces that can be used to display a fontawesome icon for this social link. See https://fontawesome.com/ for more info
           "fontawesome_class": "fab fa-github",
           // image_path: The path to an image file that will be displayed for this social link
@@ -294,7 +426,7 @@
           // tooltip_text: Social link tooltips are always prefixed by the "coin.name" setting followed by the text from this tooltip_text setting. Ex: Exor Twitter
           "tooltip_text": "Twitter",
           // url: The exact url that the social link should navigate to
-          "url": "https://twitter.com/032ChessCoin",
+          "url": "https://twitter.com/ExorOfficial",
           // fontawesome_class: A string of css classes, separated by spaces that can be used to display a fontawesome icon for this social link. See https://fontawesome.com/ for more info
           "fontawesome_class": "fab fa-twitter",
           // image_path: The path to an image file that will be displayed for this social link
@@ -308,7 +440,7 @@
           // tooltip_text: Social link tooltips are always prefixed by the "coin.name" setting followed by the text from this tooltip_text setting. Ex: Exor Discord
           "tooltip_text": "Discord",
           // url: The exact url that the social link should navigate to
-          "url": "https://discord.gg/APy2TXKDVZ",
+          "url": "https://discord.gg/dSuGm3y",
           // fontawesome_class: A string of css classes, separated by spaces that can be used to display a fontawesome icon for this social link. See https://fontawesome.com/ for more info
           "fontawesome_class": "fab fa-discord",
           // image_path: The path to an image file that will be displayed for this social link
@@ -322,7 +454,7 @@
           // tooltip_text: Social link tooltips are always prefixed by the "coin.name" setting followed by the text from this tooltip_text setting. Ex: Exor Telegram
           "tooltip_text": "Telegram",
           // url: The exact url that the social link should navigate to
-          "url": "https://t.me/ChessCoin032",
+          "url": "https://t.me/Exorofficial",
           // fontawesome_class: A string of css classes, separated by spaces that can be used to display a fontawesome icon for this social link. See https://fontawesome.com/ for more info
           "fontawesome_class": "fab fa-telegram",
           // image_path: The path to an image file that will be displayed for this social link
@@ -336,7 +468,7 @@
           // tooltip_text: Social link tooltips are always prefixed by the "coin.name" setting followed by the text from this tooltip_text setting. Ex: Exor Website
           "tooltip_text": "Website",
           // url: The exact url that the social link should navigate to
-          "url": "https://chesscoin032.com/",
+          "url": "https://exor.io",
           // fontawesome_class: A string of css classes, separated by spaces that can be used to display a fontawesome icon for this social link. See https://fontawesome.com/ for more info
           "fontawesome_class": "",
           // image_path: The path to an image file that will be displayed for this social link
@@ -350,7 +482,7 @@
           // tooltip_text: Social link tooltips are always prefixed by the "coin.name" setting followed by the text from this tooltip_text setting. Ex: Exor Coingecko
           "tooltip_text": "Coingecko",
           // url: The exact url that the social link should navigate to
-          "url": "https://www.coingecko.com/en/coins/chesscoin-0-32",
+          "url": "https://www.coingecko.com/en/coins/exor",
           // fontawesome_class: A string of css classes, separated by spaces that can be used to display a fontawesome icon for this social link. See https://fontawesome.com/ for more info
           "fontawesome_class": "",
           // image_path: The path to an image file that will be displayed for this social link
@@ -368,7 +500,10 @@
       // social_link_percent_height_tablet: Forced social link height percentage value for tablet screens
       "social_link_percent_height_tablet": 42,
       // social_link_percent_height_mobile: Forced social link height percentage value for mobile screens
-      "social_link_percent_height_mobile": 40
+      "social_link_percent_height_mobile": 40,
+      // powered_by_text: Customize the "powered by" text in the center of the footer with some custom html
+      //                  NOTE: Add the keyword {explorer_version} to display the current version number of the explorer
+      "powered_by_text": "<a class='nav-link poweredby' href='https://github.com/team-exor/eiquidus' target='_blank'>eIquidus v{}</a>"
     }
   },
 
@@ -378,6 +513,10 @@
   "index_page": {
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": true,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": true,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": true,
     // page_header: a collection of settings that pertain to the index page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -407,6 +546,10 @@
   "block_page": {
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the block page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -426,6 +569,10 @@
   "transaction_page": {
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the transaction/tx page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -448,6 +595,10 @@
   "address_page": {
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the address page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -482,6 +633,10 @@
   "error_page": {
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the error page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -499,9 +654,13 @@
   "masternodes_page": {
     // enabled: Enable/disable the masternodes page (true/false)
     //          If set to false, the masternodes page will be completely inaccessible
-    "enabled": false,
+    "enabled": true,
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the masternodes page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -530,6 +689,10 @@
     "enabled": true,
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the movement page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -565,9 +728,13 @@
   "network_page": {
     // enabled: Enable/disable the network page (true/false)
     //          If set to false, the network page will be completely inaccessible
-    "enabled": false,
+    "enabled": true,
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the network page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -585,7 +752,15 @@
       // page_length_options: An array of page length options that determine how many items/records to display in the table at any given time
       "page_length_options": [ 10, 25, 50, 75, 100 ],
       // items_per_page: The default amount of items/records to display in the table at any given time
-      "items_per_page": 10
+      "items_per_page": 10,
+      // port_filter: Specify a port number to only allow showing peers on the selected port.
+      //              Set this value to 0 to show all peers on any port.
+      //              Set this value to -1 to hide the port column. NOTE: If the -1 value is set then instead of showing multiple duplicate rows for ip addresses that connected on different ports, only a single row will be shown per unique ip address
+      "port_filter": -1,
+      // hide_protocols: An array of protocol numbers that will be filtered out of the table results
+      //                 If a peer connects to the explorer wallet with one of these protocol numbers, that record will not be displayed in this table
+      //                 Add as many protocol values as necessary in the following format: [ 0, 70803, 70819 ]
+      "hide_protocols": [ ]
     },
     // addnodes_table: a collection of settings that pertain to the add nodes table on the network page
     //                 Table data is populated via the /ext/getnetworkpeers api
@@ -593,7 +768,15 @@
       // page_length_options: An array of page length options that determine how many items/records to display in the table at any given time
       "page_length_options": [ 10, 25, 50, 75, 100 ],
       // items_per_page: The default amount of items/records to display in the table at any given time
-      "items_per_page": 10
+      "items_per_page": 10,
+      // port_filter: Specify a port number to only allow showing peers on the selected port.
+      //              Set this value to 0 to show all peers on any port.
+      //              Set this value to -1 to prevent the port portion of the addnode string from being displayed. NOTE: If the -1 value is set then instead of showing multiple duplicate rows for ip addresses that connected on different ports, only a single row will be shown per unique ip address
+      "port_filter": -1,
+      // hide_protocols: An array of protocol numbers that will be filtered out of the table results
+      //                 If a peer connects to the explorer wallet with one of these protocol numbers, that record will not be displayed in this table
+      //                 Add as many protocol values as necessary in the following format: [ 0, 70803, 70819 ]
+      "hide_protocols": [ ]
     },
     // onetry_table: a collection of settings that pertain to the one try table on the network page
     //               Table data is populated via the /ext/getnetworkpeers api
@@ -601,7 +784,15 @@
       // page_length_options: An array of page length options that determine how many items/records to display in the table at any given time
       "page_length_options": [ 10, 25, 50, 75, 100 ],
       // items_per_page: The default amount of items/records to display in the table at any given time
-      "items_per_page": 10
+      "items_per_page": 10,
+      // port_filter: Specify a port number to only allow showing peers on the selected port.
+      //              Set this value to 0 to show all peers on any port.
+      //              Set this value to -1 to prevent the port portion of the onetry string from being displayed. NOTE: If the -1 value is set then instead of showing multiple duplicate rows for ip addresses that connected on different ports, only a single row will be shown per unique ip address
+      "port_filter": -1,
+      // hide_protocols: An array of protocol numbers that will be filtered out of the table results
+      //                 If a peer connects to the explorer wallet with one of these protocol numbers, that record will not be displayed in this table
+      //                 Add as many protocol values as necessary in the following format: [ 0, 70803, 70819 ]
+      "hide_protocols": [ ]
     }
   },
 
@@ -612,6 +803,10 @@
     "enabled": true,
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the richlist/top100 page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -660,9 +855,13 @@
   "markets_page": {
     // enabled: Enable/disable the markets pages (true/false)
     //          If set to false, all market pages will be completely inaccessible
-    "enabled": true,
+    "enabled": false,
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the markets page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -671,6 +870,8 @@
       "show_title": true,
       // show_last_updated: Determine whether to show a label below the page title with the last updated date (true/false)
       "show_last_updated": true,
+      // show_exchange_url: Determine whether to show an external link to the exchange trading page for the selected pair (true/false)
+      "show_exchange_url": true,
       // show_description: Determine whether to show the page description as defined in "locale.mkt_description" (true/false)
       "show_description": true
     },
@@ -686,7 +887,7 @@
     "show_market_select": true,
     // exchanges: Enable/disable api integration with any of the available built-in exchanges
     //            Enabled exchanges display a number of exchange-related metrics including market summary, 24 hour chart, most recent buy/sell orders and latest trade history
-    //            Supported exchanges: altmarkets, bittrex, bleutrade, crex, finex, poloniex, southxchange, stex, yobit
+    //            Supported exchanges: altmarkets, bittrex, bleutrade, crex, dex-trade, freiexchange/freixlite, poloniex, southxchange, txbit, unnamed, yobit
     "exchanges": {
       // altmarkets: a collection of settings that pertain to the altmarkets exchange
       "altmarkets": {
@@ -725,23 +926,35 @@
       "crex": {
         // enabled: Enable/disable the crex exchange (true/false)
         //          If set to false, the crex page will be completely inaccessible and no market data will be downloaded for this exchange
-        "enabled": true,
+        "enabled": false,
         // trading_pairs: An array of market trading pair symbols
         //                You can add as many trading pairs as necessary
         //                All entries must specify your coins symbol as it is displayed on the exchange, followed by a slash (/) and ending with the symbol of the market or asset that is being traded against
         //                Ex: "LTC/BTC", "LTC/USDT", "LTC/ETH"
-        "trading_pairs": [ "CHESS/BTC", "CHESS/USDT" ]
+        "trading_pairs": [ "LTC/BTC" ]
       },
-      // finex: a collection of settings that pertain to the finex exchange
-      "finex": {
-        // enabled: Enable/disable the finex exchange (true/false)
-        //          If set to false, the finex page will be completely inaccessible and no market data will be downloaded for this exchange
-        "enabled": true,
+      // dextrade: a collection of settings that pertain to the dex-trade exchange
+      "dextrade": {
+        // enabled: Enable/disable the dex-trade exchange (true/false)
+        //          If set to false, the dex-trade page will be completely inaccessible and no market data will be downloaded for this exchange
+        "enabled": false,
         // trading_pairs: An array of market trading pair symbols
         //                You can add as many trading pairs as necessary
         //                All entries must specify your coins symbol as it is displayed on the exchange, followed by a slash (/) and ending with the symbol of the market or asset that is being traded against
         //                Ex: "LTC/BTC", "LTC/USDT", "LTC/ETH"
-        "trading_pairs": [ "CHESS/BTC" ]
+        "trading_pairs": [ "LTC/BTC" ]
+      },
+      // freiexchange: a collection of settings that pertain to the freiexchange/freixlite exchange
+      //               NOTE: freiexchange does not display a 24-hour chart due to a lack of OHLCV api data
+      "freiexchange": {
+        // enabled: Enable/disable the freiexchange/freixlite exchange (true/false)
+        //          If set to false, the freiexchange/freixlite page will be completely inaccessible and no market data will be downloaded for this exchange
+        "enabled": false,
+        // trading_pairs: An array of market trading pair symbols
+        //                You can add as many trading pairs as necessary
+        //                All entries must specify your coins symbol as it is displayed on the exchange, followed by a slash (/) and ending with the symbol of the market or asset that is being traded against
+        //                Ex: "LTC/BTC", "LTC/USDT", "LTC/ETH"
+        "trading_pairs": [ "LTC/BTC" ]
       },
       // poloniex: a collection of settings that pertain to the poloniex exchange
       "poloniex": {
@@ -765,19 +978,31 @@
         //                Ex: "LTC/BTC", "LTC/USDT", "LTC/ETH"
         "trading_pairs": [ "LTC/BTC" ]
       },
-      // stex: a collection of settings that pertain to the stex exchange
-      "stex": {
-        // enabled: Enable/disable the stex exchange (true/false)
-        //          If set to false, the stex page will be completely inaccessible and no market data will be downloaded for this exchange
-        "enabled": true,
+      // txbit: a collection of settings that pertain to the txbit exchange
+      //        NOTE: txbit does not display a 24-hour chart due to a lack of OHLCV api data
+      "txbit": {
+        // enabled: Enable/disable the txbit exchange (true/false)
+        //          If set to false, the txbit page will be completely inaccessible and no market data will be downloaded for this exchange
+        "enabled": false,
         // trading_pairs: An array of market trading pair symbols
         //                You can add as many trading pairs as necessary
         //                All entries must specify your coins symbol as it is displayed on the exchange, followed by a slash (/) and ending with the symbol of the market or asset that is being traded against
         //                Ex: "LTC/BTC", "LTC/USDT", "LTC/ETH"
-        "trading_pairs": [ "CHESS/USDT" ]
+        "trading_pairs": [ "LTC/ETH" ]
+      },
+      // unnamed: a collection of settings that pertain to the unnamed exchange
+      "unnamed": {
+        // enabled: Enable/disable the unnamed exchange (true/false)
+        //          If set to false, the unnamed page will be completely inaccessible and no market data will be downloaded for this exchange
+        "enabled": false,
+        // trading_pairs: An array of market trading pair symbols
+        //                You can add as many trading pairs as necessary
+        //                All entries must specify your coins symbol as it is displayed on the exchange, followed by a slash (/) and ending with the symbol of the market or asset that is being traded against
+        //                Ex: "LTC/BTC", "LTC/USDT", "LTC/ETH"
+        "trading_pairs": [ "LTC/BTC" ]
       },
       // yobit: a collection of settings that pertain to the yobit exchange
-      //        NOTE: yobit does not display a 24-hour chart due to yobit's lack of OHLCV api data
+      //        NOTE: yobit does not display a 24-hour chart due to a lack of OHLCV api data
       "yobit": {
         // enabled: Enable/disable the yobit exchange (true/false)
         //          If set to false, the yobit page will be completely inaccessible and no market data will be downloaded for this exchange
@@ -796,9 +1021,9 @@
     "default_exchange": {
       // exchange_name: The name of the default exchange must exactly match the name of an exchange in the "exchanges" setting above
       //                See the list of supported exchanges above for the list of supported exchange names
-      "exchange_name": "crex",
+      "exchange_name": "freiexchange",
       // trading_pair: The name of the trading pair for the default exchange must exactly match the name of a trading pair from the "exchanges" setting above
-      "trading_pair": "CHESS/BTC"
+      "trading_pair": "LTC/BTC"
     }
   },
 
@@ -806,9 +1031,13 @@
   "api_page": {
     // enabled: Enable/disable the public api system (true/false)
     //          If set to false, the entire api page will be disabled and all public api endpoints will show a "This method is disabled" msg when called regardless of their individual enabled statuses
-    "enabled": false,
+    "enabled": true,
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the api page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -1046,6 +1275,10 @@
     "enabled": true,
     // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
     "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
     // page_header: a collection of settings that pertain to the claim address page header
     "page_header": {
       // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
@@ -1064,15 +1297,47 @@
     "enable_bad_word_filter": true
   },
 
+  // orphans_page: a collection of settings that pertain to the orphans page
+  "orphans_page": {
+    // enabled: Enable/disable the orphans page (true/false)
+    //          If set to false, the orphans page will be completely inaccessible
+    "enabled": true,
+    // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
+    "show_panels": false,
+    // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+    "show_nethash_chart": false,
+    // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+    "show_difficulty_chart": false,
+    // page_header: a collection of settings that pertain to the orphans page header
+    "page_header": {
+      // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
+      "show_img": true,
+      // show_title: Determine whether to show the page title as defined in "locale.orphan_title" (true/false)
+      "show_title": true,
+      // show_last_updated: Determine whether to show a label below the page title with the last updated date (true/false)
+      "show_last_updated": true,
+      // show_description: Determine whether to show the page description as defined in "locale.orphan_description" (true/false)
+      "show_description": true
+    },
+    // orphans_table: a collection of settings that pertain to the orphans table on the orphans page
+    //                Table data is populated via the /ext/getorphanlist api
+    "orphans_table": {
+      // page_length_options: An array of page length options that determine how many items/records to display in the table at any given time
+      "page_length_options": [ 10, 25, 50, 75, 100, 250, 500, 1000 ],
+      // items_per_page: The default amount of items/records to display in the table at any given time
+      "items_per_page": 10
+    }
+  },
+
   // sync: a collection of settings that pertain to the data synchronization process
   "sync": {
     // block_parallel_tasks: Use multiple threads to do blockchain syncing which greatly improves the initial sync speed, but there is a drawback.
     //                       If you sync using more than 1 parallel task, then historical balance data for wallet addresses can possibly be saved out-of-order and there is currently no workaround for this.
     //                       Therefore, it is recommended to keep this setting to 1 parallel task for now until a proper solution can be procured for the historical balance issue.
     "block_parallel_tasks": 1,
-    // update_timeout: The amount of time to wait (in milliseconds) before moving to the next block or transaction during blockchain sync or reindex (scripts/sync.sh /path/to/node update or scripts/sync.sh /path/to/node reindex)
+    // update_timeout: The amount of time to wait (in milliseconds) before moving to the next block or transaction during blockchain sync or reindex (/path/to/node scripts/sync.js update or /path/to/node scripts/sync.js reindex)
     "update_timeout": 10,
-    // check_timeout: The amount of time to wait (in milliseconds) before moving to the next block or transaction during a check sync (scripts/sync.sh /path/to/node check)
+    // check_timeout: The amount of time to wait (in milliseconds) before moving to the next block or transaction during a check sync (/path/to/node scripts/sync.js check)
     "check_timeout": 250,
     // save_stats_after_sync_blocks: During index syncronization, stats are saved after processing this many blocks to save time by not having to save after each block
     "save_stats_after_sync_blocks": 100,
@@ -1083,6 +1348,7 @@
     //         Valid options:
     //         COINBASE : retrieve the total coins sent from the coinbase (Often used for PoW coins)
     //         GETINFO : retrieved from getinfo rpc cmd (Often used for PoS coins)
+    //         GETBLOCKCHAININFO : retrieved from getblockchaininfo rpc cmd
     //         HEAVY: retrieved from getsupply rpc cmd (The "blockchain_specific.heavycoin.enabled" setting must be set to true and the "blockchain_specific.heavycoin.api_cmds.getsupply" setting must be set up correctly for this option to work properly)
     //         BALANCES : get the supply by running a query on the addresses collection and summing up all positive balances (potentially a long running query for blockchains with tons of addresses)
     //         TXOUTSET : retrieved from gettxoutsetinfo rpc cmd
@@ -1135,6 +1401,8 @@
     // use_rpc: Determine whether to call rpc api cmds directly using the faster rpc method or using the older method via internal http api (true/false)
     //          NOTE: This should always be set to true unless there is a specific need to test or log certain apis
     "use_rpc": true,
+    // rpc_concurrent_tasks: The maximum number of rpc cmds that can be run simultaneously. Additional rpc cmds will go into a queue and be run on a first-in-first-out basis
+    "rpc_concurrent_tasks": 1,
     // getnetworkhashps: Returns the estimated network hashes per second. This should be a positive whole number
     "getnetworkhashps": "getnetworkhashps",
     // getmininginfo: Returns a json object containing mining-related information
@@ -1153,6 +1421,8 @@
     "getrawtransaction": "getrawtransaction",
     // getinfo: Returns an object containing various state info
     "getinfo": "getinfo",
+    // getblockchaininfo: Returns an object containing various state info regarding blockchain processing
+    "getblockchaininfo": "getblockchaininfo",
     // getpeerinfo: Returns data about each connected network node as a json array of objects
     "getpeerinfo": "getpeerinfo",
     // gettxoutsetinfo: Returns an object with statistics about the unspent transaction output set
@@ -1201,6 +1471,10 @@
         "enabled": true,
         // show_panels: Determine whether to show the panels configured in the shared_pages.page_header section across the top of this page (true/false)
         "show_panels": false,
+        // show_nethash_chart: Determine whether to show the network hashrate chart configured in the shared_pages.network_charts.nethash_chart section across the top of this page (true/false)
+        "show_nethash_chart": false,
+        // show_difficulty_chart: Determine whether to show the network difficulty chart configured in the shared_pages.network_charts.difficulty_chart section across the top of this page (true/false)
+        "show_difficulty_chart": false,
         // page_header: a collection of settings that pertain to the reward page header
         "page_header": {
           // show_img: Determine whether to show the page title image defined in the "shared_pages.page_header.page_title_image" setting (true/false)
