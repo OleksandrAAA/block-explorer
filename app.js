@@ -510,7 +510,7 @@ app.use('/ext/getsummary',  function(req, res) {
                       difficultyHybrid: difficultyHybrid,
                       supply: (stats == null || stats.supply == null ? 0 : stats.supply),
                       hashrate: hashrate,
-                      lastPrice: (cur_usd_price ? cur_usd_price: 0),
+                      lastPrice: (cur_usd_price ? cur_usd_price : 0),
                       connections: (connections ? connections : '-'),
                       blockcount: (blockcount ? blockcount : '-')
                     });
