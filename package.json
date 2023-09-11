@@ -3,7 +3,7 @@
   "version": "1.102.0",
   "private": true,
   "scripts": {
-    "start": "node --stack-size=10000 ./bin/cluster",
+    "start": "npm run prestart && node --stack-size=40000 ./bin/cluster",
     "stop": "node ./scripts/stop_explorer.js",
     "start-instance": "npm run prestart && node --stack-size=10000 ./bin/cluster 1",
     "start-forever": "npm run prestart \"forever production\"",

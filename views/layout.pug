@@ -360,7 +360,8 @@ html(lang='en')
               splitParts = splitValue.split('.');
               showTopPanelData('supplypanel', 'supplyPanelLoading');
 
-              $("#marketCap").html(splitParts[0] + '.<span class="decimal">' + splitParts[1] + '</span>');
+              //$("#marketCap").html(splitParts[0] + '.<span class="decimal">' + numberToCurrencyWithUnit(splitParts[1]) + '</span>');
+              $("#marketCap").html(' ' + numberToCurrencyWithUnit(splitValue));
               showTopPanelData('marketCapPanel', 'marketCapPanelLoading');
 
               splitParts = diffString.split('.');
