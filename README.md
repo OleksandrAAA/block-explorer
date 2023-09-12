@@ -1,23 +1,22 @@
-# eIquidus
+# eIquidus - Adapted for Chesscoin 0.32%
+https://explorer.chesscoin032.com/
 
+# v1.102.0
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/team-exor/eiquidus?color=ffbd11&label=version)
 ![GitHub Release Date](https://img.shields.io/github/release-date/team-exor/eiquidus)
 ![GitHub last commit](https://img.shields.io/github/last-commit/team-exor/eiquidus)
-<img src="public/img/screenshots/platform-windows macos linux-lightgrey.svg" />
 ![GitHub](https://img.shields.io/github/license/team-exor/eiquidus?color=ffbd11)
 
 Written in node.js and mongodb, eIquidus is the most stable, secure, customizable and feature-rich open-source block explorer with support for virtually any altcoin that implements some form of the [Bitcoin RPC API protocol](https://developer.bitcoin.org/reference/rpc/index.html) (EVM blockchains such as ETH, BNB, etc. are not supported). Originally built for the [Exor blockchain](https://github.com/team-exor/exor), eIquidus has since grown into a fully-featured explorer with a focus on stability and security at its core. All features from the [original iquidus explorer](https://github.com/iquidus/explorer) are included here along with many new ideas from other iquidus forks, and an absolute ton of new custom changes and bug fixes that were developed specifically for eIquidus.
 
-![Homepage](public/img/screenshots/homepage-1-102-0.png)
+### Special Thanks
 
-### Premium Support
+- **[Luke Williams (aka iquidus)](https://github.com/iquidus):** for creating the original [Iquidus explorer](https://github.com/iquidus/explorer)
+- **[Alan Rudolf (aka suprnurd)](https://github.com/suprnurd):** for the custom changes found in the [Ciquidus explorer](https://github.com/suprnurd/ciquidus)
+- **[Tim Garrity (aka uaktags)](https://github.com/uaktags):** for his many contributions to the Iquidus explorer and custom features from the [uaktags explorer](https://github.com/uaktags/explorer)
+- **[TheHolyRoger](https://github.com/TheHolyRoger):** for his continued work and contributions to the Iquidus explorer
+- All the rest of the Iquidus contributors who helped shape the Iquidus explorer in some way
 
-All code in this project is open source and available free-of-charge under the BSD-3-Clause license. If you require assistance setting up an explorer for your coin, or are interested in hiring a developer to incorporate custom changes for your explorer, you may contact the developer using the links below:
-
-<div align="center">
-<a href="https://discord.gg/dSuGm3y"><img src="https://img.shields.io/badge/Discord-Joe%20%5BTeam%20Exor%5D%235573-blue?style=for-the-badge&logo=Discord" /></a>&nbsp;
-<a href="https://t.me/joeuhren"><img src="https://img.shields.io/badge/Telegram-joeuhren-blue?style=for-the-badge&logo=Telegram" /></a>
-</div>
 
 Table of Contents
 ------------------
@@ -62,8 +61,6 @@ Table of Contents
   - [Restore Database Script](#restore-database-script)
   - [Delete Database Script](#delete-database-script)
 - [Known Issues](#known-issues)
-- [Donations / Support Us](#donations--support-us)
-- [Special Thanks](#special-thanks)
 - [License](#license)
 
 ### Features
@@ -221,7 +218,7 @@ Table of Contents
 
 ### See it in Action
 
--  https://explorer.exor.io/
+-  https://explorer.chesscoin032.com/
 
 ### Installation
 
@@ -948,25 +945,6 @@ This error typically means there is some kind of connection issue between the ex
 **Warning: Accessing non-existent property 'padLevels' of module exports inside circular dependency**
 
 This warning is currently displayed when starting or stopping the explorer using the `forever` module. The good news is that this warning can safely be ignored although it can be confusing as to why it is displayed at all. This is a deep rooted issue with `forever` that is actively being discussed [here](https://github.com/foreversd/forever/issues/1077). Long story short is that `forever` depends on a number of outdated dependencies that require certain parts of the code to be rewritten and so far it has not been officially resolved yet. `Forever` is still included as an option for those who are used to using it although we recommend using `pm2` to run your production explorer since it is more modern and can do everything `forever` does and more.
-
-### Donations / Support Us
-
-The eIquidus block explorer is brought to you by the tireless efforts of the [Exor development team](https://exor.io/#section-team) for the benefit of the greater crypto community. If you enjoy our work, please consider supporting our continued development of this and many other cool crypto projects which you can find on our [github page](https://github.com/team-exor).
-
-Please consider supporting us with a small donation by sending us some cryptocurrency:
-
-- **BTC:** [15zQAQFB9KR35nPWEJEKvmytUF6fg2zvdP](https://www.blockchain.com/btc/address/15zQAQFB9KR35nPWEJEKvmytUF6fg2zvdP)
-- **EXOR:** [EYYW8Nvz5aJz33M3JNHXG2FEHWUsntozrd](https://explorer.exor.io/address/EYYW8Nvz5aJz33M3JNHXG2FEHWUsntozrd)
-
-We also encourage submitting quality pull requests from software developers looking to help make the block explorer even better.
-
-### Special Thanks
-
-- **[Luke Williams (aka iquidus)](https://github.com/iquidus):** for creating the original [Iquidus explorer](https://github.com/iquidus/explorer)
-- **[Alan Rudolf (aka suprnurd)](https://github.com/suprnurd):** for the custom changes found in the [Ciquidus explorer](https://github.com/suprnurd/ciquidus)
-- **[Tim Garrity (aka uaktags)](https://github.com/uaktags):** for his many contributions to the Iquidus explorer and custom features from the [uaktags explorer](https://github.com/uaktags/explorer)
-- **[TheHolyRoger](https://github.com/TheHolyRoger):** for his continued work and contributions to the Iquidus explorer
-- All the rest of the Iquidus contributors who helped shape the Iquidus explorer in some way
 
 ### License
 
