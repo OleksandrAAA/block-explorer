@@ -542,19 +542,19 @@ Also see the [Useful Scripts](#useful-scripts) section for more helpful scripts.
 Easier crontab syntax using npm scripts, but may not work on some systems depending on permissions and how nodejs was installed:
 
 ```
-*/1 * * * * cd /path/to/explorer && npm run sync-blocks > /dev/null 2>&1
-*/2 * * * * cd /path/to/explorer && npm run sync-markets > /dev/null 2>&1
-*/5 * * * * cd /path/to/explorer && npm run sync-peers > /dev/null 2>&1
-*/5 * * * * cd /path/to/explorer && npm run sync-masternodes > /dev/null 2>&1
+*/1 * * * * cd /path/to/explorer && npm run sync-blocks > ./tmp/blocks 2>&1
+*/2 * * * * cd /path/to/explorer && npm run sync-markets > ./tmp/markets 2>&1
+*/5 * * * * cd /path/to/explorer && npm run sync-peers > ./tmp/peers 2>&1
+*/5 * * * * cd /path/to/explorer && npm run sync-masternodes > ./tmp/masternodes 2>&1
 ```
 
 Or, run the crontab by calling the sync script directly, which should work better in the event you have problems running the npm scripts from a crontab:
 
 ```
-*/1 * * * * cd /path/to/explorer && /path/to/node scripts/sync.js update > /dev/null 2>&1
-*/2 * * * * cd /path/to/explorer && /path/to/node scripts/sync.js market > /dev/null 2>&1
-*/5 * * * * cd /path/to/explorer && /path/to/node scripts/sync.js peers > /dev/null 2>&1
-*/5 * * * * cd /path/to/explorer && /path/to/node scripts/sync.js masternodes > /dev/null 2>&1
+*/1 * * * * cd /path/to/explorer && /path/to/node scripts/sync.js update > ./tmp/blocks 2>&1
+*/2 * * * * cd /path/to/explorer && /path/to/node scripts/sync.js market > ./tmp/markets 2>&1
+*/5 * * * * cd /path/to/explorer && /path/to/node scripts/sync.js peers > ./tmp/peers 2>&1
+*/5 * * * * cd /path/to/explorer && /path/to/node scripts/sync.js masternodes > ./tmp/masternodes 2>&1
 ```
 
 ### Wallet Settings
